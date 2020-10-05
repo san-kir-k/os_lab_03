@@ -49,7 +49,7 @@ int read_float(float* n) {
     float sign = 1.0;
     bool is_start = true, is_endl = false;
     while ((read_return = read(STDIN, &ch, 1)) > 0) {
-        if (ch == ' ' && is_start) {
+        if ((ch == ' ' || ch == '\n') && is_start) {
             continue;
         }
         is_start = false;
@@ -107,7 +107,7 @@ int scan_matrix(int str_c, int col_c, float m[str_c][col_c]) {
 
 void write_float(float n) {
     char buf[30];
-    sprintf(buf, "%7.3f", n);
+    sprintf(buf, "%8.3f", n);
     int i = 0;
     while(buf[i] != '\0') {
         write(STDOUT, &buf[i++], 1);
@@ -124,4 +124,31 @@ void print_matrix(int str_c, int col_c, float m[str_c][col_c]) {
         }
         write(STDOUT, &endl, 1);
     }
+}
+
+int read_int(int* n) {
+    char ch;
+    int read_return = 1;
+    int sign = 1;
+    bool is_start = true;
+    int result = 0;
+    while ((read_return = read(STDIN, &ch, 1)) > 0) {
+        if ((ch == ' ' || ch == '\n') && is_start) {
+            continue;
+        }
+        if (isdigit(ch)) {
+            result = result * 10 + ch - '0';
+            is_start = false;
+        } else if (ch == '-' && is_start) {
+            sign = -1;
+            is_start = false;
+        } else if (ch == '\n' || ch == ' ') {
+            break;
+        } else {
+            skip_tail();
+            return RI_INVALID;
+        }
+    }
+    *n = sign * result;
+    return (read_return == 0) ? RI_EOF : RI_VALID;
 }
