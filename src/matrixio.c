@@ -95,12 +95,6 @@ int scan_matrix(int str_c, int col_c, float* m) {
                 return RF_INVALID_EOF;
             }
         }
-        if (read_return != RF_VALID_ENDL) {
-            if (!check_tail()) {
-                skip_tail();
-                return RF_INVALID;
-            }
-        }
     }
     return RF_VALID;
 }
