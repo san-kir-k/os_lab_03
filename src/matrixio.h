@@ -25,6 +25,6 @@ bool check_tail();
 bool is_valid(char* buf);
 int read_float(float* n);
 int read_int(int* n);
-int scan_matrix(int str_c, int col_c, float m[str_c][col_c]);
+int scan_matrix(int str_c, int col_c, float* m);
 void write_float(float n);
-void print_matrix(int str_c, int col_c, float m[str_c][col_c]);
+void print_matrix(int str_c, int col_c, float* m);

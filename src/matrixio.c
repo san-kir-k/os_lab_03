@@ -78,11 +78,11 @@ int read_float(float* n) {
     return (is_endl) ? RF_VALID_ENDL : RF_VALID;
 }
 
-int scan_matrix(int str_c, int col_c, float m[str_c][col_c]) {
+int scan_matrix(int str_c, int col_c, float* m) {
     int read_return = 0;
     for (int i = 0; i < str_c; ++i) {
         for (int j = 0; j < col_c; ++j) {
-            read_return = read_float(&m[i][j]);
+            read_return = read_float(&m[i * col_c + j]);
             if (read_return == RF_INVALID || read_return == RF_INVALID_ENDL) {
                 if (read_return == RF_INVALID) {
                     skip_tail();
@@ -114,12 +114,12 @@ void write_float(float n) {
     }
 }
 
-void print_matrix(int str_c, int col_c, float m[str_c][col_c]) {
+void print_matrix(int str_c, int col_c, float* m) {
     char space = ' ';
     char endl = '\n';
     for (int i = 0; i < str_c; ++i) {
         for (int j = 0; j < col_c; ++j) {
-            write_float(m[i][j]);
+            write_float(m[i * col_c + j]);
             write(STDOUT, &space, 1);
         }
         write(STDOUT, &endl, 1);
