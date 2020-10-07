@@ -132,6 +132,7 @@ int read_int(int* n) {
     int sign = 1;
     bool is_start = true;
     int result = 0;
+    int count_of_digits = 0;
     while ((read_return = read(STDIN, &ch, 1)) > 0) {
         if ((ch == ' ' || ch == '\n') && is_start) {
             continue;
@@ -139,6 +140,7 @@ int read_int(int* n) {
         if (isdigit(ch)) {
             result = result * 10 + ch - '0';
             is_start = false;
+            count_of_digits++;
         } else if (ch == '-' && is_start) {
             sign = -1;
             is_start = false;
@@ -148,6 +150,9 @@ int read_int(int* n) {
             skip_tail();
             return RI_INVALID;
         }
+    }
+    if (count_of_digits == 0) {
+        return RI_INVALID;
     }
     *n = sign * result;
     return (read_return == 0) ? RI_EOF : RI_VALID;
