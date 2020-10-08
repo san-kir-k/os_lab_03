@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <time.h>
 #include "matrixio.h"
 
 typedef struct container container;
@@ -161,7 +162,10 @@ int main(int argc, char* argv[]) {
         logs(err, STDERR);
         return 1;
     }
+    clock_t begin = clock();
     algo(m_s_size, m_c_size, m, w, result, K, threads);
+    clock_t end = clock();
+    float time_spent = 1000.0 * (double)(end - begin) / CLOCKS_PER_SEC;
     if (get_return == RI_EOF) {
         char endl = '\n';
         write(STDIN, &endl, 1);
@@ -169,5 +173,10 @@ int main(int argc, char* argv[]) {
     char* output_msg = "Result matrix is:\n";
     logs(output_msg, STDOUT);
     print_matrix(m_s_size, m_c_size, result);
+    char* time_msg = "Time spent on algo (ms):\n";
+    logs(time_msg, STDOUT);
+    write_float(time_spent);
+    char endl = '\n';
+    write(STDOUT, &endl, 1);
     return 0;
 }
