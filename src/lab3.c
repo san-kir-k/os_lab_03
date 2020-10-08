@@ -121,8 +121,8 @@ void algo(int s_size, int c_size, float* m, float* w, float* res, int K, int thr
 }
 
 int main(int argc, char* argv[]) {
-    if (argc != 2) {
-        char* err = "Usage: ./executable -count_of_threads.\n";
+    if (argc <= 2 && argc >= 4) {
+        char* err = "Usage: ./executable -count_of_threads [-w].\n";
         logs(err, STDERR);
         return 1;
     } 
@@ -170,9 +170,11 @@ int main(int argc, char* argv[]) {
         char endl = '\n';
         write(STDIN, &endl, 1);
     }
-    char* output_msg = "Result matrix is:\n";
-    logs(output_msg, STDOUT);
-    print_matrix(m_s_size, m_c_size, result);
+    if (argc != 3) {
+        char* output_msg = "Result matrix is:\n";
+        logs(output_msg, STDOUT);
+        print_matrix(m_s_size, m_c_size, result);
+    }
     char* time_msg = "Time spent on algo (ms):\n";
     logs(time_msg, STDOUT);
     write_float(time_spent);
