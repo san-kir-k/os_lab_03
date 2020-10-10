@@ -8,7 +8,7 @@ def main():
         sys.exit(1)
 
     test_dir = sys.argv[1]
-    line_matrix_count = [10, 500]
+    line_matrix_count = [10, 1000]
     for test_count in range(2):
         val_list = [round(random.uniform(-10.0, 10.0), random.randint(0, 3)) for _ in range(line_matrix_count[test_count] ** 2)]
         s = line_matrix_count[test_count]
