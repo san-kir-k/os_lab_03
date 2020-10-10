@@ -64,7 +64,7 @@ int get_matrix(int s_size, int c_size, float* m) {
     return scan_return;
 }
 
-// считаем одну ячейку по алгоритму свертки (эта функция и будет запущена на потоках)
+// считаем кусок матрицы (по строкам) по алгоритму свертки (эта функция и будет запущена на потоках)
 void* cell_algo(void* arg) {
     // парсим аргументы
     container* c = arg;
@@ -75,27 +75,26 @@ void* cell_algo(void* arg) {
     float* res = c->res;
     // массив для того, чтобы задавать, как нужно сместиться относительно центральной ячейки
     int dir[3] = {-1, 0, 1};
-    // сам алгоритм (чтобы не допустить обращения тредов к одному и тому же месту памяти, будем давать им непересекающиеся ячейки)
-    // например: тред №1 будет обрабатывать 0, 3, 6, ... ячейки; тред №2 - 1, 4, 7,...; тред №3 - 2, 5, 6...
-    for (int t = thread_id; t < s_size * c_size; t += threads) {
-        int count = 0;
-        float new_val = 0.0;
-        // по индексу в одномерном массиве получаем индексы в двумерном массиве
-        int str_c = t / s_size;
-        int col_c = t % c_size; 
-        // применяем матрицу свертки, обрабатывая невалидные индексы
-        for (int i = 0; i < 3; ++i) {
-            for (int j = 0; j < 3; ++j) {
-                if (((str_c + dir[i]) * c_size + col_c + dir[j] >= 0) &&
-                ((str_c + dir[i]) * c_size + col_c + dir[j] < c_size * s_size)) {
-                    new_val += w[i * 3 + j] * m[(str_c + dir[i]) * c_size + col_c + dir[j]];
-                    count++;
+    // сам алгоритм (чтобы не допустить обращения тредов к одному и тому же месту памяти, будем давать им непересекающиеся секторы)
+    // например: тред №1 будет обрабатывать 0-ую строку, тред №2 - 1-ую строку и тд
+    for (int str_c = thread_id; str_c < s_size; str_c += threads) {
+        for (int col_c = 0; col_c < c_size; col_c++) {
+            int count = 0;
+            float new_val = 0.0;
+            // применяем матрицу свертки, обрабатывая невалидные индексы
+            for (int i = 0; i < 3; ++i) {
+                for (int j = 0; j < 3; ++j) {
+                    if (((str_c + dir[i]) * c_size + col_c + dir[j] >= 0) &&
+                    ((str_c + dir[i]) * c_size + col_c + dir[j] < c_size * s_size)) {
+                        new_val += w[i * 3 + j] * m[(str_c + dir[i]) * c_size + col_c + dir[j]];
+                        count++;
+                    }
                 }
             }
+            new_val /= count;
+            // записываем новое значение в массив
+            res[str_c * c_size + col_c] = new_val;
         }
-        new_val /= count;
-        // записываем новое значение в массив
-        res[str_c * c_size + col_c] = new_val;
     }
     // заканчиваем тред
     pthread_exit(NULL);
@@ -104,7 +103,7 @@ void* cell_algo(void* arg) {
 // алгоритм, запускающий треды 
 void algo(int s_size, int c_size, float* m, float* w, float* res, int K, int threads) {
     // создаем копию исходной матрицы, чтобы не испортить ее
-    float tmp_m[s_size * c_size];
+    float* tmp_m = (float*)malloc(s_size * c_size * sizeof(float));
     deep_copy(s_size, c_size, m, tmp_m);
     // массив в котором будут храниться структуры, описывающие треды
     pthread_t tids[threads];
@@ -139,6 +138,7 @@ void algo(int s_size, int c_size, float* m, float* w, float* res, int K, int thr
             deep_copy(s_size, c_size, res, tmp_m);
         }
     }
+    free(tmp_m);
 }
 
 int main(int argc, char* argv[]) {
@@ -167,22 +167,31 @@ int main(int argc, char* argv[]) {
     if (read_dimension(&m_c_size) != RI_VALID) {
         return 1;
     }
-    float m[m_s_size * m_c_size], result[m_s_size * m_c_size];
+    float* m = (float*)malloc(m_s_size * m_c_size * sizeof(float));
+    float* result = (float*)malloc(m_s_size * m_c_size * sizeof(float));
     int get_return = get_matrix(m_s_size, m_c_size, m);
     if (get_return != RF_VALID) {
+        free(m);
+        free(result);
         return 1;
     }
     // ввод окна
-    float w[w_s_size * w_c_size];
+    float* w = (float*)malloc(w_s_size * w_c_size * sizeof(float));
     get_return = get_matrix(w_s_size, w_c_size, w);
     if (get_return != RF_VALID) {
+        free(m);
+        free(result);
+        free(w);
         return 1;
     }
-    // ввод K
+    // ввод K;
     get_return = read_int(&K);
     if (get_return == RI_INVALID) {
         char* err = "Invalid int input!\n";
         logs(err, STDERR);
+        free(m);
+        free(result);
+        free(w);
         return 1;
     }
     // запуск алгоритма и бенчмарк
@@ -205,5 +214,8 @@ int main(int argc, char* argv[]) {
     write_float(time_spent);
     char endl = '\n';
     write(STDOUT, &endl, 1);
+    free(m);
+    free(result);
+    free(w);
     return 0;
 }
