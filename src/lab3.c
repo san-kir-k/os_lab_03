@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <time.h>
+#include <dirent.h>
 #include "matrixio.h"
 // !для удобства будем хранить матрицу, как одномерный массив длины n*m!
 
@@ -126,6 +127,27 @@ void algo(int s_size, int c_size, float* m, float* w, float* res, int K, int thr
                 logs(err, STDERR);
             }
         }
+        // считаем число тредов (к сожалению этот кусок кода работает только на линуксе, мак не знает о /proc/)
+        /* раскоментируйте этот код, если хотите получить информацию о числе тредов
+        if (_k == 0) { 
+            DIR* dir;
+            struct dirent* entry;
+            int pid = getpid();
+            char dirname[256];
+            sprintf(dirname, "/proc/%d/task", pid);
+            int threads_c = -3;
+            if ((dir = opendir(dirname)) == NULL) {
+                char* err = "Unable to open dir\n";
+                logs(err, STDERR);
+            } else {
+                while ((entry = readdir(dir)) != NULL) {
+                    threads_c++;
+                }
+                closedir(dir);
+            }
+            printf("Number of threads per one K: %d", threads_c);
+        } 
+        */
         // ждем все треды, тк нам нужна результирующая матрица полностью, чтобы применить еще k-1 раз матрицу свертки
         for (int i = 0; i < threads; ++i) {
             if (pthread_join(tids[i], NULL) != 0) {
