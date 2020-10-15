@@ -1,5 +1,5 @@
 CXX = gcc
-CXXFLAGS = -pedantic -Wall -Werror -std=c99
+CXXFLAGS = -pedantic -Wall -Werror -std=c11
 LDFLAGS = -lpthread
 NAME = lab3
 DIR = ../src
