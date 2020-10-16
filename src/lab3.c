@@ -145,7 +145,7 @@ void algo(int s_size, int c_size, float* m, float* w, float* res, int K, int thr
                 }
                 closedir(dir);
             }
-            printf("Number of threads per one K: %d", threads_c);
+            printf("Number of threads per one K: %d\n", threads_c);
         } 
         */
         // ждем все треды, тк нам нужна результирующая матрица полностью, чтобы применить еще k-1 раз матрицу свертки
@@ -190,7 +190,18 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     float* m = (float*)malloc(m_s_size * m_c_size * sizeof(float));
+    if (m == NULL) {
+        char* err = "Matrix m: malloc error!\n";
+        logs(err, STDERR);
+        return 1;
+    }
     float* result = (float*)malloc(m_s_size * m_c_size * sizeof(float));
+    if (result == NULL) {
+        free(m);
+        char* err = "Matrix result: malloc error!\n";
+        logs(err, STDERR);
+        return 1;
+    }
     int get_return = get_matrix(m_s_size, m_c_size, m);
     if (get_return != RF_VALID) {
         free(m);
