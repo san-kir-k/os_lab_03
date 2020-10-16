@@ -228,10 +228,11 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     // запуск алгоритма и бенчмарк
-    clock_t begin = clock();
+    time_t begin, end;
+    time(&begin);
     algo(m_s_size, m_c_size, m, w, result, K, threads);
-    clock_t end = clock();
-    float time_spent = 1000.0 * (double)(end - begin) / CLOCKS_PER_SEC;
+    time(&end);
+    float time_spent = difftime(end, begin);
     if (get_return == RI_EOF) {
         char endl = '\n';
         write(STDIN, &endl, 1);
