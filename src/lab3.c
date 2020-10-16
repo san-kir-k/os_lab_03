@@ -6,8 +6,17 @@
 #include <pthread.h>
 #include <time.h>
 #include <dirent.h>
+#include <sys/time.h>
 #include "matrixio.h"
 // !для удобства будем хранить матрицу, как одномерный массив длины n*m!
+
+long long current_timestamp() {
+    struct timeval te;
+    gettimeofday(&te, NULL); // get current time
+    long long milliseconds = te.tv_sec * 1000LL + te.tv_usec / 1000; // calculate milliseconds
+    // printf("milliseconds: %lld\n", milliseconds);
+    return milliseconds;
+}
 
 // структура для передачи в функцию, которая будет запущена на нескольких потоках
 typedef struct container container;
@@ -228,11 +237,11 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     // запуск алгоритма и бенчмарк
-    time_t begin, end;
-    time(&begin);
+    long long begin, end;
+    begin = current_timestamp();
     algo(m_s_size, m_c_size, m, w, result, K, threads);
-    time(&end);
-    float time_spent = difftime(end, begin);
+    end = current_timestamp();
+    long long time_spent = end - begin;
     if (get_return == RI_EOF) {
         char endl = '\n';
         write(STDIN, &endl, 1);
@@ -245,9 +254,7 @@ int main(int argc, char* argv[]) {
     }
     char* time_msg = "Time spent on algo (ms):\n";
     logs(time_msg, STDOUT);
-    write_float(time_spent);
-    char endl = '\n';
-    write(STDOUT, &endl, 1);
+    printf("%lld\n", time_spent);
     free(m);
     free(result);
     free(w);
